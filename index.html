@@ -1,17 +1,101 @@
-<!–– Wyatt Queirolo (wfq2), Rashaad Ahmad (ra459), Kimberly Lee (kwl38)––>
 <html>
+<!-- Wyatt Queirolo (wfq2), Rashaad Ahmad (ra459), Kimberly Lee (kwl38)
+-->
 <head>
-<title>INFO 3300 - Project 1</title>
+<title>Project 1</title>
 <link href="https://fonts.googleapis.com/css?family=Alegreya|Alegreya+Sans" rel="stylesheet">
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/default.min.css">
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="http://d3js.org/topojson.v2.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
 <style>
-
+body { font-family: 'Alegreya Sans', Calibri, sans-serif; }
+svg { border: solid #ccc 1px; }
+path.country { fill: #ccc; stroke: #888;; }
 </style>
 </head>
 <body>
+<h3>Project 1</h3>
+
+
+<div>Beers in the us</a>.</div>
+
+<svg height="600" width="900"></svg>
+
+<script>
+
+var svg = d3.select("svg");
+
+var projection = d3.geoAlbersUsa().scale(75);
+var pathGenerator = d3.geoPath().projection(projection);
+
+var divergingColors = ["#d8b365", "#f5f5f5", "#5ab4ac"];
+var sequentialColors = ['#edf8fb','#b2e2e2','#66c2a4','#2ca25f','#006d2c'];
+
+var populationScale = d3.scaleLinear().domain([-5, 0, 5]).range(divergingColors);
+var percentScale = d3.scaleLinear()
+.domain([0, 25, 50, 75, 100]).range(sequentialColors);
+
+var counties, states;
+var beermap;
+var brewmap;
+
+// function to handle any row-by-row processing on CSV
+var parseRow = function(row) {
+	row.FIPS = Number(row.FIPS);
+	return row;
+}
+
+d3.queue()
+.defer(d3.json, "us.json")
+.defer(d3.csv,"beers.csv")
+.defer(d3.csv,"breweries.csv")
+.await(function (error, rawMap, beers, breweries) {
+	
+	
+	counties = topojson.feature(rawMap, rawMap.objects.counties);
+	states = topojson.feature(rawMap, rawMap.objects.states);
+	
+	beermap = beers;
+	brewmap = breweries;
+	brewmap.forEach(function (d){
+		d.state = d.state.replace(/ /g,'');
+	});
+
+	showMap(percentScale, "Ed5CollegePlusPct");
+});
+
+function showMap(scale, variable) {
+	// Create or modify paths for each country
+	
+	projection.fitExtent([[0,0], [svg.attr("width"), svg.attr("height")]], states);
+	pathGenerator = d3.geoPath().projection(projection);
+	
+	var paths = svg.selectAll("path.country").data(states.features);
+	paths.enter().append("path").attr("class", "country")
+	.on("click", function (d) { console.log(d.id); })
+	.merge(paths)
+	.transition().duration(1000)
+	.style("fill","grey")
+	.attr("d", function (county) {
+		return pathGenerator(county);
+	});
+	
+}
+
+
+</script>
+
+<!-- This block will be automatically filled with syntax-highlighted code from the script below -->
+<pre><code id="display">
+</code></pre>
+
+
+<script>
+document.getElementById("display").innerText = document.getElementById("notes").innerText;
+hljs.initHighlightingOnLoad();
+</script>
+
 
 </body>
 </html>
