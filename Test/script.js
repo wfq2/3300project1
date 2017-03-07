@@ -8,6 +8,7 @@ var tiles;
 var linear;
 var beermap;
 var abvextent;
+var brewscale;
 function render() {
 
     var w = 960;
@@ -108,20 +109,25 @@ function render() {
         });
         //['#cc8f00', '#901800']
         linear = d3.scaleLinear().domain(abvextent).range(['#cc8f00', '#901800']);
+        brewscale = d3.scaleSqrt().domain(brewextent).range([.8,1.1])
 
-        borders = g.selectAll('.tiles').data(tiles.features).enter().append('path').attr('d', path).attr('class', 'border')
+        borders = g.selectAll('.tiles').data(tiles.features).enter().append('path').attr('d', path).attr('viewBox',path).attr('class', 'border')
         .attr('fill', function (d) {
             if (isNaN(d.avgabv)){
                 return linear(.05);
             }
             return linear(d.avgabv);
         })
-        .attr('stroke', 'white').attr('stroke-width', 4);
+        .attr('stroke', 'white').attr('stroke-width', 4)
+        .attr('transform', function (x){
+            return 'translate(' +path.centroid(x)[0] + ' ' + path.centroid(x)[1] +')scale(' + brewscale(x.brewcount) + ')' + 'translate(' + -path.centroid(x)[0] + ' ' + -path.centroid(x)[1] + ')';
+        });
 
         // // add some labels
         g.selectAll('.state-label').data(tiles.features).enter().append('text').attr('class', function (d) {
             return 'state-label state-label-' + d.id;
         }).attr('transform', function (d) {
+            console.log(path.centroid(d));
             return 'translate(' + path.centroid(d) + ')';
         }).attr('fill', 'white')
         .text(function (d) {
