@@ -111,6 +111,9 @@ function render() {
 
         borders = g.selectAll('.tiles').data(tiles.features).enter().append('path').attr('d', path).attr('class', 'border')
         .attr('fill', function (d) {
+            if (isNaN(d.avgabv)){
+                return linear(.05);
+            }
             return linear(d.avgabv);
         })
         .attr('stroke', 'white').attr('stroke-width', 4);
