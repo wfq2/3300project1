@@ -109,7 +109,7 @@ function render() {
         });
         //['#cc8f00', '#901800']
         linear = d3.scaleLinear().domain(abvextent).range(['#cc8f00', '#901800']);
-        brewscale = d3.scaleSqrt().domain(brewextent).range([.8,1.1])
+        brewscale = d3.scaleSqrt().domain(brewextent).range([.7,1.1])
 
         borders = g.selectAll('.tiles').data(tiles.features).enter().append('path').attr('d', path).attr('viewBox',path).attr('class', 'border')
         .attr('fill', function (d) {
