@@ -1,5 +1,13 @@
 'use strict';
 
+var mytilegram;
+var brewmap;
+var brewextent;
+var borders;
+var tiles;
+var linear;
+var beermap;
+var abvextent;
 function render() {
 
     var w = 960;
@@ -31,8 +39,12 @@ function render() {
 
     var svg = d3.select('svg').attr('width', w).attr('height', h);
 
-    d3.json('tiles-topo-us.json', function showData(error, tilegram) {
-        var tiles = topojson.feature(tilegram, tilegram.objects.tiles);
+    d3.queue()
+    .defer(d3.json,'tiles-topo-us.json')
+    .defer(d3.csv,"beers.csv")
+    .defer(d3.csv,"breweries.csv")
+    .await( function (error, tilegram,beers,breweries) {
+        tiles = topojson.feature(tilegram, tilegram.objects.tiles);
 
         var transform = d3.geoTransform({
             point: function point(x, y) {
@@ -50,6 +62,31 @@ function render() {
         var stateNames = [];
         // build a list of color values
         var colors = [];
+        mytilegram = tilegram;
+        brewmap = breweries;
+        beermap = beers;
+
+        tiles.features.forEach( function (geometry) {
+            geometry.brewcount = 0;
+            geometry.avgabv = 0;
+            geometry.abvcount = 0;
+
+            beermap.forEach(function (y){
+            if (brewmap[y.brewery_id].state == geometry.properties.state){
+                geometry.avgabv = geometry.avgabv + Number(y.abv);
+                geometry.abvcount++;
+            }
+        });
+        geometry.avgabv = geometry.avgabv / geometry.abvcount;
+
+            brewmap.forEach(function (x){
+            x.state = x.state.replace(/ /g,'');
+            if (geometry.properties.state == x.state){
+                geometry.brewcount++;
+            }
+        });
+        });
+
 
         tilegram.objects.tiles.geometries.forEach(function (geometry) {
             if (stateCodes.indexOf(geometry.properties.state) === -1) {
@@ -60,12 +97,23 @@ function render() {
                 colors.push(_.find(data, { 'code': geometry.properties.state }).value);
             }
         });
+        brewextent = d3.extent(tiles.features, function (x){
+            return x.brewcount;
+        })
+        abvextent = d3.extent(tiles.features,function (x){
+            if (isNaN(x.avgabv)){
+                return .05;
+            }
+            return x.avgabv;
+        });
+        //['#cc8f00', '#901800']
+        linear = d3.scaleLinear().domain(abvextent).range(['#cc8f00', '#901800']);
 
-        var linear = d3.scaleLinear().domain([0, _.mean(colors), d3.max(colors)]).range(['#cc8f00', '#901800']);
-
-        var borders = g.selectAll('.tiles').data(tiles.features).enter().append('path').attr('d', path).attr('class', 'border').attr('fill', function (d, i) {
-            return linear(colors[i]);
-        }).attr('stroke', 'white').attr('stroke-width', 4);
+        borders = g.selectAll('.tiles').data(tiles.features).enter().append('path').attr('d', path).attr('class', 'border')
+        .attr('fill', function (d) {
+            return linear(d.avgabv);
+        })
+        .attr('stroke', 'white').attr('stroke-width', 4);
 
         // // add some labels
         g.selectAll('.state-label').data(tiles.features).enter().append('text').attr('class', function (d) {
