@@ -42,11 +42,9 @@ function render() {
 
     d3.queue()
     .defer(d3.json,'tiles-topo-us.json')
-
-    .defer(d3.csv,"beers.csv")
-    .defer(d3.csv,"breweries.csv")
-
-    .await( function (error, tilegram,beers,breweries) {
+    .defer(d3.csv,'beers.csv')
+    .defer(d3.csv,'breweries.csv')
+    .await( function (error,tilegram,beers,breweries) {
         tiles = topojson.feature(tilegram, tilegram.objects.tiles);
 
         var transform = d3.geoTransform({
