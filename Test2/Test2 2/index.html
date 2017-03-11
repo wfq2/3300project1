@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    body { 
+        font-family: Tahoma;
+    }
+    .state-label {
+        letter-spacing: 1px;
+        font-size: 14px;
+        text-anchor: middle;
+    }
+    svg { 
+        border: solid #ccc 1px;
+         }
+</style>
+
+<script type='text/javascript' src='//d3js.org/d3.v4.min.js'></script>
+<script type='text/javascript' src='//d3js.org/topojson.v1.min.js'></script>
+<script type='text/javascript' src='//cdn.jsdelivr.net/lodash/4.16.6/lodash.min.js'></script>
+<script type='text/javascript' src='stateCodes.js'></script>
+
+<body>
+
+
+<!-- START required DOM structure -->
+<section class="wrap">
+    <div id='vis'>
+        <svg>
+        </svg>
+    </div>
+</section>
+
+<!-- d3 code -->
+<script src="script.js"></script>
+
+<script>
+    render();
+
+    d3.select(self.frameElement).style('height', '650px');
+</script>   
